@@ -1,0 +1,60 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="whitegrid")
+plt.rcParams["figure.figsize"] = (10, 5)
+
+print("✅ Libraries imported successfully!")
+np.random.seed(42)
+n = 1000  
+
+df = pd.DataFrame({
+    "Order ID": np.arange(1, n+1),
+    "Order Date": pd.date_range(start="2022-01-01", periods=n, freq="D"),
+    "Customer ID": np.random.randint(1000, 2000, n),
+    "Region": np.random.choice(["North", "South", "East", "West"], n),
+    "Product Category": np.random.choice(["Furniture", "Office Supplies", "Technology"], n),
+    "Sales": np.random.randint(50, 1000, n),
+    "Quantity": np.random.randint(1, 10, n),
+    "Discount": np.random.choice([0, 0.1, 0.2, 0.3, 0.4], n)
+})
+df["Profit"] = df["Sales"] * (1 - df["Discount"]) * np.random.uniform(0.05, 0.3, n)
+
+print("✅ Sample retail dataset created!")
+df.head()
+print("Dataset shape:", df.shape)
+print("\nMissing values:\n", df.isna().sum())
+print("\nData types:\n", df.dtypes)
+
+df.describe()
+sales_by_cat = df.groupby("Product Category")["Sales"].sum().sort_values(ascending=False)
+profit_by_cat = df.groupby("Product Category")["Profit"].sum().sort_values(ascending=False)
+
+fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+sns.barplot(x=sales_by_cat.values, y=sales_by_cat.index, palette="viridis", ax=ax[0])
+ax[0].set_title("Total Sales by Product Category")
+sns.barplot(x=profit_by_cat.values, y=profit_by_cat.index, palette="coolwarm", ax=ax[1])
+ax[1].set_title("Total Profit by Product Category")
+plt.show()
+sns.scatterplot(x="Discount", y="Profit", data=df, alpha=0.6, color="teal")
+plt.title("Impact of Discount on Profit")
+plt.show()
+df["Month"] = df["Order Date"].dt.month
+monthly_sales = df.groupby("Month")["Sales"].sum()
+
+monthly_sales.plot(kind="line", marker="o", color="orange", title="Monthly Sales Trend")
+plt.xlabel("Month")
+plt.ylabel("Total Sales")
+plt.show()
+region_sales = df.groupby("Region")["Sales"].sum().sort_values(ascending=False)
+sns.barplot(x=region_sales.values, y=region_sales.index, palette="Blues_r")
+plt.title("Sales by Region")
+plt.show()
+customer_sales = df.groupby("Customer ID")["Sales"].sum()
+sns.histplot(customer_sales, bins=30, kde=True, color="purple")
+plt.title("Distribution of Customer Lifetime Sales")
+plt.xlabel("Total Sales per Customer")
+plt.ylabel("Number of Customers")
+plt.show()
